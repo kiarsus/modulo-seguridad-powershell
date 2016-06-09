@@ -7,15 +7,11 @@ ModuleToProcess = 'modulo-seguridad-powershell.psm1'
 # Version number of this module.
 ModuleVersion = '1.0'
 
-
-
 # Author of this module
 Author = 'Enrique PARRAS GARRIDO'
 
-
 # Copyright statement for this module
 Copyright = '(c) 2016 Enrique Parras Garrido. All rights reserved.'
-
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '3.0'
@@ -28,6 +24,10 @@ PowerShellHostVersion = ''
 
 # Minimum version of the .NET Framework required by this module
 DotNetFrameworkVersion = '4.0'
+
+# List of all files packaged with this module
+FileList = 'modulo-seguridad-powershell.psd1', 'modulo-seguridad-powershell.psm1'
+           'LICENSE', 'README.md', 'install.ps1'
 
 }
 
