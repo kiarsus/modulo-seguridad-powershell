@@ -26,7 +26,7 @@ PowerShellHostVersion = ''
 DotNetFrameworkVersion = '4.0'
 
 # List of all files packaged with this module
-FileList = 'modulo-seguridad-powershell.psd1', 'modulo-seguridad-powershell.psm1'
+FileList = 'modulo-seguridad-powershell.psd1', 'modulo-seguridad-powershell.psm1',
            'LICENSE', 'README.md', 'install.ps1'
 
 }
