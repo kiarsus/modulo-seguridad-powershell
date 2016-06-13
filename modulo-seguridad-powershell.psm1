@@ -1,5 +1,5 @@
-﻿
-# El presenete módulo de Powershel intenta solvertar la falta de 
+
+# El presente módulo de Powershel intenta solvertar la falta de 
 # herramientas para el profesional de seguridad TIC a la hora de 
 # trabajar con los sistemas opererativos Windows, para análisis 
 # forense, monitorización de eventos y contención de determinados 
@@ -15,6 +15,8 @@
 #    * Registro de Windows
 #    * Red
 # 
+# Ahora se encuentran todos en el mismo módulo pero se preveé su 
+# separación en diferentes módulos
 
 
 
@@ -28,7 +30,7 @@
 
 
 
-
+#  Módulo de red
 # Este apartado comprende los recuros para trabajar con la red entre
 # los que se incluye:
 #
@@ -38,7 +40,9 @@
 #   *  Listar tabla arp del equipo local.
 #   *  Listar tabla arp del equipo local.
 #   
-#
+#-----------------------------------------------------------
+
+
 
 
 
@@ -714,6 +718,828 @@ Provider    NoteProperty System.String Provider=
     ($TableProvider | where mac -Match $MacProvider).provider
 }
 
+
+
+
+
+
+
+
+
+#  módulo  de ficheros o sistema de archivo
+
+
+
+
+
+# Este apartado implementa las funciones que permiten
+# trabajar con ficheros .PST usados 
+#
+#
+# trabajar con ficheros PST 
+#--------------------------------------------------------------
+
+
+<#
+.Synopsis
+   Abre un fichero PST para poder trabajar con él.
+.DESCRIPTION
+   Abre un fichero PST para poder trabajar con él.
+   En el caso de que ya esté abierto, no hace nada.
+.OUTPUTS
+   Devuelve la ruta del fichero PST que se acaba de abrir
+   Es una cadena de texto
+
+.EXAMPLE
+   El siguiente ejemplo abre el fichero "myfilepst.pst" para trabajar con él.
+
+   $a = Open-PSTFile myfilepst.pst
+
+EXAMPLE
+   El siguiente ejemplo abre todos los ficheros PST contenidos en el directorio
+   por defecto donde se almacenan los ficheos PST del usuario actual.
+   En la variable $a sólo se almacenará una estructura PST, correspondiente
+   con la del último PST abierto
+   $a =  (ls $env:LOCALAPPDATA\Microsoft\Outlook\*.pst).FullName  | Where-Object{open-PSTFile $_ } 
+#>
+
+function Open-PSTFile
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    Param
+    (
+            # Ruta del fichero .PST que queremos abrir.
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [ValidateScript({If(Test-Path $_){$true}else{Throw "No se encuentra el fichero .PST: $_"}})]        
+        [string]$pathfilePST
+    )
+
+    # Abrimos el entorno de Microsoft Outlook que nos 
+    # permite trabajar con los almacenes de datos .PST
+
+    Add-type -assembly "Microsoft.Office.Interop.Outlook" | out-null 
+    $outlook = new-object -comobject outlook.application 
+    $namespace = $outlook.GetNameSpace("MAPI")
+     
+    # No es necesario comprobar si el fichero .PST Ya está cargado, ya que 
+    # si estaba cargado no se vuelve a cargar de nuevo.
+
+    $a= $namespace.AddStore($pathfilePST)
+
+    for ($i = 1; $i -le ($namespace.Folders.count); $i++)
+    { 
+        if ($namespace.Folders.Item($i).Store.FilePath -eq $pathfilePST){ return $namespace.Folders.Item($i).Store.FilePath} 
+    }    
+    
+
+}
+
+
+
+
+
+
+
+
+
+<#
+.Synopsis
+   Comprueba si un fichero PST está abierto.
+.DESCRIPTION
+   Comprueba si un fichero PST está abierto.
+.OUTPUTS
+   Devuelve <boolean> 
+   True  - si se encuentra abierto
+   False - si no se encuentra abiert
+.EXAMPLE
+   El siguiente ejemplo comprueba si el fichero "myfilepst.pst" 
+   se encuentra abierto.
+   Y en $a almacena la estructura para trabajar con él.
+    
+    IsOpen-PSTFile myfilepst.pst
+.EXAMPLE
+   El siguiente ejemplo comprueba cuales de los ficheros 
+   .PST del directorio "c:\midirectorio", se encientran abiertos.
+    
+    IsOpen-PSTFile myfilepst.pst
+
+    ls  'c:\midirectorio\*.pst'  | select  @{Name="Abierto"; Expression = {IsOpen-PSTFile $_.FullName}},@{Name="Fichero .PST"; Expression = {$_.FullName}} | ft -AutoSize
+#>
+
+function IsOpen-PSTFile
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    Param
+    (
+            # Ruta del fichero .PST que queremos comprobar si está abierto.
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [ValidateScript({If(Test-Path $_){$true}else{Throw "No se encuentra el fichero .PST: $_"}})]        
+        [string]$pathfilePST
+    )
+
+    # Abrimos el entorno de Microsoft Outlook que nos 
+    # permite trabajar con los almacenes de datos .PST
+
+    Add-type -assembly "Microsoft.Office.Interop.Outlook" | out-null 
+    $outlook = new-object -comobject outlook.application 
+    $namespace = $outlook.GetNameSpace("MAPI")
+     
+    for ($i = 1; $i -le ($namespace.Folders.count); $i++)
+    { 
+        if ($namespace.Folders.Item($i).Store.FilePath -eq $pathfilePST){ return $true }
+    }    
+    return $false
+}
+
+
+
+
+
+
+
+<#
+.Synopsis
+   Devuelve la ruta del fichero .PST, que es el almacén por defecto.
+.DESCRIPTION
+   Devuelve la ruta del fichero .PST, que es el almacén por defecto.
+.OUTPUTS
+   Devuelve el siguiente objeto:
+
+  TypeName: System.Management.Automation.PSCustomObject
+
+Name        MemberType   Definition                                                                     
+----        ----------   ----------                                                                     
+Equals      Method       bool Equals(System.Object obj)                                                 
+GetHashCode Method       int GetHashCode()                                                              
+GetType     Method       type GetType()                                                                 
+ToString    Method       string ToString()                                                              
+DisplayName NoteProperty System.String DisplayName=                                              
+FilePath    NoteProperty System.String FilePath=
+
+.EXAMPLE
+   El siguiente ejemplo devuelve la ruta del fichero .PST, 
+   que es el almacén por defecto.
+    
+   Get-PSTFileDefault
+#>
+
+function Get-PSTFileDefault
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    Param
+    ( 
+    )
+
+    # Abrimos el entorno de Microsoft Outlook que nos 
+    # permite trabajar con los almacenes de datos .PST
+
+    Add-type -assembly "Microsoft.Office.Interop.Outlook" | out-null 
+    $outlook = new-object -comobject outlook.application 
+    $namespace = $outlook.GetNameSpace("MAPI")
+    
+
+    return $namespace.DefaultStore.FilePath
+
+}
+
+
+
+
+
+
+<#
+.Synopsis
+   Devuelve la ruta de los fichero .PST, que se encuentran abiertos.
+.DESCRIPTION
+   Devuelve la ruta de los fichero .PST, que se encuentran abiertos.
+.OUTPUTS
+   Devuelve <String> 
+.EXAMPLE
+   El siguiente ejemplo devuelve la ruta de los ficheros .PST, que se
+   encuentran abiertos
+    
+   Get-PSTOpenFiles
+#>
+
+function Get-PSTOpenFiles
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    Param
+    ( 
+    )
+
+    # Abrimos el entorno de Microsoft Outlook que nos 
+    # permite trabajar con los almacenes de datos .PST
+
+    Add-type -assembly "Microsoft.Office.Interop.Outlook" | out-null 
+    $outlook = new-object -comobject outlook.application 
+    $namespace = $outlook.GetNameSpace("MAPI")
+    
+
+    # Abrimos el entorno de Microsoft Outlook que nos 
+    # permite trabajar con los almacenes de datos .PST
+
+    Add-type -assembly "Microsoft.Office.Interop.Outlook" | out-null 
+    $outlook = new-object -comobject outlook.application 
+    $namespace = $outlook.GetNameSpace("MAPI")
+     
+    # No es necesario comprobar si el fichero .PST Ya está cargado, ya que 
+    # si estaba cargado no se vuelve a cargar de nuevo.
+
+    $a=@()
+
+    for ($i = 1; $i -le ($namespace.Folders.count); $i++)
+    { 
+        $obj = New-Object PSObject
+        $obj | Add-Member DisplayName ($namespace.Folders.Item($i).Store.DisplayName)
+        $obj | Add-Member FilePath ($namespace.Folders.Item($i).Store.FilePath)
+        $a = $a + $obj
+    }    
+    return $a
+}
+
+
+
+
+
+
+
+
+<#
+.Synopsis
+   Cierra un fichero PST para que nos sea accesible desde el entorno de Microsoft Outlook.
+   No se podrá cerrar el PST asignado al perfil por defecto.
+.DESCRIPTION
+   Cierra un fichero PST para que nos sea accesible desde el entorno de Microsoft Outlook.
+   No se podrá cerrar el PST asignado al perfil por defecto.
+.EXAMPLE
+   El siguiente ejemplo cierra el fichero "myfilepst.pst"
+   
+   Close_PSTFile myfilepst.pst
+
+EXAMPLE
+   El siguiente ejemplo cierra todos los ficheros PST contenidos en el directorio
+   por defecto donde se almacenan los ficheos PST del usuario actual.
+
+   ls $env:LOCALAPPDATA\Microsoft\Outlook\*.pst | Close-PSTFile
+
+EXAMPLE
+   El siguiente ejemplo cierra todos los ficheros PST abiertos.
+
+   Get-PSTOpenFiles | ForEach-Object { Close-PSTFile $_.FilePath}
+#>
+
+function Close-PSTFile
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    Param
+    (
+            # Ruta del fichero .PST que queremos cerrar.
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [ValidateScript({If(Test-Path $_){$true}else{Throw "No se encuentra el fichero .PST: $_"}})]        
+        [string]$pathfilePST
+    )
+
+    # Abrimos el entorno de Microsoft Outlook que nos 
+    # permite trabajar con los almacenes de datos .PST
+
+    Add-type -assembly "Microsoft.Office.Interop.Outlook" | out-null 
+    $outlook = new-object -comobject outlook.application 
+    $namespace = $outlook.GetNameSpace("MAPI")
+     
+    # No es necesario comprobar si el fichero .PST Ya está cargado, ya que 
+    # si estaba cargado no se vuelve a cargar de nuevo.
+    
+    for ($i = 1; $i -le ($namespace.Folders.count); $i++)
+    { 
+        # cerramos el .PST siempre que sea diferente del almacen por defecto
+        if ( ($namespace.Folders.Item($i).Store.FilePath -eq $pathfilePST) -and  ((Get-PSTFileDefault) -ne $pathfilePST))
+        {
+            $namespace.Folders.Item($i).Store.FilePath
+            $namespace.RemoveStore( $namespace.Stores.Item($i).GetRootFolder())   
+        }
+    }    
+}
+
+
+
+
+# En este apartado se trabaja con los directorios de los PST
+# y con los elementos que los contienen 
+#
+#
+#
+# Para listar los directorios contenidos en los PST se usa la
+# la función Get-PSTListDirectory que a su vez se ayuda de su
+# función anidada Get-PSTListDirectoryAux, ya que hacen uso
+# de la recursividad para su funcionamiento.
+
+
+
+<#
+.Synopsis
+   Lista los directorios contenidos en un ficheros .PST.
+.DESCRIPTION
+   Lista los directorios contenidos en un ficheros .PST.
+   En esta lista se incluyen recuros como los contactos, 
+   el calendario, Fuentes RSS entre otras. 
+.EXAMPLE
+   El siguiente ejemplo lista los directorios del .PST myfilepst.pst
+
+   Get-PSTListDirectory myfilepst.pst
+
+#>
+
+function Get-PSTListDirectory
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    Param
+    (
+            # Ruta del fichero .PST que queremos listar directorios.
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [ValidateScript({If(Test-Path $_){$true}else{Throw "No se encuentra el fichero .PST: $_"}})]        
+        [string]$pathfilePST
+    )
+
+        <#
+        .Synopsis
+           Lista los directorios contenidos en un ficheros .PST.
+        .DESCRIPTION
+           Lista los directorios contenidos en un ficheros .PST.
+           En esta lista se incluyen recuros como los contactos, 
+           el calendario, Fuentes RSS entre otras. 
+        .EXAMPLE
+           El siguiente ejemplo lista los directorios del un fichero .PST
+           Para ello debnemos pasar como parámetro al objeto raiz del fichero
+           .PST
+           
+           Get-PSTListDirectory $ObjRaizPST
+
+        #>
+
+
+
+        function Get-PSTListDirectoryAux
+        {
+            [CmdletBinding(ConfirmImpact='Medium')]
+            Param
+            (
+                # Hace referencia al objeto que se obtiene
+                # como resultado de recuperar un fichero PST
+                # montado
+                [psobject]$dir
+            )
+
+            # Si el directorio ya no tiene más subdirectorios la lista
+            # vacía, que equivale a @()
+            if ($dir.Folders.Count -eq 0){ return @() }
+    
+            # Iniciamos con la lista vacía para poder hacer la
+            # unión de la lista inicial recursiva y la generada
+            # desde la raiz.
+            $lista =  @()
+            # Añadimos la entrada al listado de directorio
+            for ($i = 1; $i -le ($dir.Folders.Count); $i++)
+            { 
+                # Creamos la entrada del listado de directorio
+                $obj = New-Object PSObject
+                $obj | Add-Member FolderPath ($dir.Folders.item($i).FolderPath)
+                $obj | Add-Member Folder    ($dir.Folders.item($i))
+                #lista recursiva de la carpeta i
+                $Listarec = Get-PSTListDirectoryAux $dir.Folders.Item($i) # $lista 
+                # unimos a la lista del directori el siguiente directorio y todos sus hijos
+                $lista = $lista  + $obj + $Listarec
+            }
+            # devolvemos la lista de directorios recursivos
+            $lista        
+        } # Fin de la función auxiliar Get-PSTListDirectoryAux
+
+
+
+    # Abrimos el entorno de Microsoft Outlook que nos 
+    # permite trabajar con los almacenes de datos .PST
+
+    Add-type -assembly "Microsoft.Office.Interop.Outlook" | out-null 
+    $outlook = new-object -comobject outlook.application 
+    $namespace = $outlook.GetNameSpace("MAPI")
+     
+    # No es necesario comprobar si el fichero .PST Ya está cargado, ya que 
+    # si estaba cargado no se vuelve a cargar de nuevo.
+    
+    $papelera = Open-PSTFile $pathfilePST
+    
+    # Entre todos los ficheros .PST abiertos cargamos el OBJETO correpsondiente
+    # a la ruta pasada en el parámetro $pathfilePST
+    for ($i = 1; $i -le ($namespace.Folders.count); $i++)
+    { 
+        # cerramos el .PST siempre que sea diferente del almacen por defecto
+        if ( ($namespace.Folders.Item($i).Store.FilePath -eq $pathfilePST))
+        {
+           $RootFolder = ($namespace.Folders.Item($i).Store).GetRootFolder()
+           break
+        }
+    }    
+
+    
+    # Llamamos a la función auxiliar con el objeto
+    # que representa la raíz del fichero .PST paso 
+    # como parámetro.
+    Get-PSTListDirectoryAux $RootFolder
+
+    $RootFolder
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Este apartado implementa las funciones que permiten
+# la eliminación de ficheros temporales tanto propios
+# del usuario como del sistema.
+#
+#
+
+
+#-------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<#
+.Synopsis
+   Obtiene una lista de los usuarios existentes en pc.
+   Puede que esos usuarios no hayan iniciado sesión y
+   que su directorio personal no exista.
+   
+.DESCRIPTION
+   Obtiene una lista de los usuarios existentes
+.EXAMPLE
+   El siguiente ejemplo otiene una lista de los usuarios existentes 
+   Get-UserList
+.EXAMPLE
+   El siguiente ejemplo calcula el directorio personal de los usuarios del pc.
+
+   Get-UserList | select  @{Name="Path"; Expression = {(($env:USERPROFILE.Substring(0,$env:USERPROFILE.LastIndexOf("\") +1)) + $_.user)}} | ft -AutoSize
+
+.EXAMPLE
+   El siguiente ejemplo calcula el directorio personal de los usuarios del pc. Y dice cuales existen
+   
+   Get-UserList | select  @{Name="Existe"; Expression = {(Test-Path (($env:USERPROFILE.Substring(0,$env:USERPROFILE.LastIndexOf("\") +1)) + $_.user))}}, @{Name="Path"; Expression = {(($env:USERPROFILE.Substring(0,$env:USERPROFILE.LastIndexOf("\") +1)) + $_.user)}} | ft -AutoSize
+#>
+
+function Get-UserList
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    Param
+    (
+    )
+
+  $a=@()
+   
+  foreach ($item in (gwmi  Win32_UserAccount).name)
+  {
+    $obj = New-Object PSObject
+    $obj | Add-Member User $item
+    $a = $a + $obj
+  }
+  $a
+}
+
+
+
+
+
+
+
+
+
+
+<#
+.Synopsis
+   Elimina contenido de un directorio
+.DESCRIPTION
+   Elimina contenido de un directorio
+.EXAMPLE
+   El siguiente ejemplo elimina el contenido del directorio "c:\tmp\poupelle" 
+   Remove-DirectoryContent -pathfileordirectory "c:\tmp\poupelle" 
+.EXAMPLE
+   El siguiente ejemplo elimina el contenido del directorio "c:\tmp\poupelle" 
+   Con las credenciales almacenadas en la variable $cred
+   Remove-DirectoryContent -pathfileordirectory "c:\tmp\poupelle" -Credential $cred
+.EXAMPLE
+   El siguiente ejemplo elimina el contenido del directorio "c:\tmp\poupelle" 
+   Para ello pide las credenciales 
+   Remove-DirectoryContent -pathfileordirectory "c:\tmp\poupelle" -Credential (Get-Credential)
+
+#>
+
+function Remove-DirectoryContent
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    Param
+    (
+        # Directorio del que queremos eliminar el contenido
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [ValidateScript({If(Test-Path $_){$true}else{Throw "No se encuentra el directorio: $_"}})]        
+        [string]$pathfileordirectory,
+
+        # Credenciales/permisos con los que vamos a eliminar el contenido del directorio 
+        [Parameter()]
+        [PSCredential]$Credential
+    )
+   
+  if ($Credential){
+  $pathfileordirectory + " con crede" #  ls $pathfileordirectory -Recurse | rm -Credential $Credential -recurse -confirm:$false -ErrorAction SilentlyContinue
+  } else{
+  $pathfileordirectory + " sin crede" #  ls $pathfileordirectory -Recurse | rm  -recurse -confirm:$false -ErrorAction SilentlyContinue
+  }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+<#
+.Synopsis
+   Elimina ficheros temporales de la máquina
+
+.DESCRIPTION
+   Elimina los ficheros temporales de un ordenador. Permite
+   parámetros para seleccionar que ficheros eliminar
+   y con qué credenciales.
+
+.EXAMPLE    
+    Remove-FileTemp -CurrentUser -Prefetch -WindowsTemp -InternetCache -Credential Get-Credential
+    Elimina la siguiente lista de temporales con las credenciales que pide al usuario.
+        - temporales del usuario actual 
+        - los ficheros PRefetch 
+        - temporales de windows
+        - temorales de internet explorer
+        
+.EXAMPLE
+     
+     Remove-FileTemp -Cookies -History -Recent
+
+     Con este ejemplo se eliminan:
+        - las cookies
+        - el historial de navegación de Explorer e Internet Explorer
+        - los ficheros recientes
+.EXAMPLE
+
+   El siguiente ejemplo elimina los ficheros temporales del usuario
+   
+   Remove-FileTemp -currentuser 
+
+#>
+function Remove-FileTemp
+
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    
+    Param
+    (
+
+        # Indica si el borrado se hará de los temporales del usuario actual
+        # no es compatible con el parámentro $user, ni $alluser.
+        # Solo puede usarse uno de los parámetros.
+        [Parameter()]
+        #[ValidateScript({if((-not $User) -and (-not $AllUser)) {$true} else{Throw "Sólo puede especificarse un parámetro: -AllUser -CurrentUser o -User."}})]
+        [switch]$CurrentUser,
+
+        # Posibles mejoras para incluir todos los usuarios o un usuario concreto
+        # Indica que el borrado se hará de los temporales de todos los usuarios del pc 
+        # no es compatible con el parámentro $CurrentUser, ni $alluser.
+        # Solo puede usarse uno de los parámetros.
+        #[Parameter()]
+        #[ValidateScript({if((-not $CurrentUser) -and (-not $User)) {$true} else{Throw "Sólo puede especificarse un parámetro: AllUser CurrentUser o User."}})]
+        #[switch]$AllUser,
+
+        # Indica si el borrado se hará sobre el usuario especificado.
+        # no es compatible con el parámentro $CurrentUser, ni $alluser.
+        # Solo puede usarse uno de los parámetros.
+        #[Parameter(ValueFromPipeline=$true,
+        #           ValueFromPipelineByPropertyName=$true)]
+        #[ValidateScript({if((-not $CurrentUser) -and (-not $AllUser)) {$true} else{Throw "Sólo puede especificarse un parámetro: AllUser CurrentUser o User."}})]
+        #[string]$User,
+
+        # Indica si el borrado se hará además del directorio prefech
+        [Parameter()]
+        [switch]$Prefetch,
+
+        # Indica si el borrado se hará del directorio temp de windows
+        [Parameter()]
+        [switch]$WindowsTemp,
+
+        # Indica si el borrado se hará sobre los temporales del
+        # Internet Explorer
+        [Parameter()]
+        [switch]$Cookies,
+
+        # Indica si el borrado se hará sobre los temporales del
+        # Internet Explorer
+        [Parameter()]
+        [switch]$History,
+
+        # Indica si el borrado se hará sobre los temporales del
+        # Internet Explorer
+        [Parameter()]
+        [switch]$Recent,
+
+
+        # Indica si el borrado se hará sobre los temporales del
+        # Internet Explorer
+        [Parameter()]
+        [switch]$InternetCache,
+
+        # Credenciales/permisos con los que vamos a eliminar
+        [Parameter()]
+        [PSCredential]$Credential
+    )
+
+    # directorio prefetch de windows
+    # probado para windows 8 , 8.1
+    if ($Prefetch){
+        if ($Credential){
+            Remove-DirectoryContent ($env:windir + "\Prefetch") -Credential $Credential 
+        } else{
+            Remove-DirectoryContent ($env:windir + "\Prefetch") 
+        }
+    }
+
+    # directorio temp de windows
+    # probado para windows 8 , 8.1
+    if ($WindowsTemp){
+       # $dirpref=$env:windir + "\Temp"
+        if ($Credential){
+            Remove-DirectoryContent ($env:windir + "\Temp") -Credential $Credential 
+        } else{
+            Remove-DirectoryContent ($env:windir + "\Temp") 
+        }
+    }
+
+    # directorio temp del usuario actual
+    # probado para windows 8 , 8.1
+    if ($CurrentUser){
+       # $dirpref=$env:windir + "\Temp"
+        if ($Credential){
+            Remove-DirectoryContent $env:tmp  -Credential $Credential 
+        } else{
+            Remove-DirectoryContent $env:tmp  
+        }
+    }
+
+# Para acceso a las Environment.SpecialFolder se hace uso de las especificaciones
+# que aparecen en el sigueinte enlace 
+# https://msdn.microsoft.com/es-es/library/system.environment.specialfolder(v=vs.110).aspx    
+#
+    # directorio Cookies del usuario actual
+    # probado para windows 8 , 8.1
+    if ($Cookies){
+        if ($Credential){
+            Remove-DirectoryContent ([Environment]::GetFolderPath("Cookies"))  -Credential $Credential 
+        } else{
+            Remove-DirectoryContent ([Environment]::GetFolderPath("Cookies"))
+        }
+    }
+    
+    # directorio Cookies del usuario actual
+    # probado para windows 8 , 8.1
+    if ($History){
+        if ($Credential){
+            Remove-DirectoryContent ([Environment]::GetFolderPath("History"))  -Credential $Credential 
+        } else{
+            Remove-DirectoryContent ([Environment]::GetFolderPath("History"))
+        }
+    }
+
+    # directorio temporal de IE del usuario actual
+    # probado para windows 8 , 8.1
+    if ($InternetCache){
+        if ($Credential){
+            Remove-DirectoryContent ([Environment]::GetFolderPath("InternetCache"))  -Credential $Credential 
+            Remove-DirectoryContent ([Environment]::GetFolderPath("InternetCache") + "\IE")  -Credential $Credential 
+
+        } else{
+            Remove-DirectoryContent ([Environment]::GetFolderPath("InternetCache"))
+            Remove-DirectoryContent ([Environment]::GetFolderPath("InternetCache") + "\IE") 
+        }
+    }
+
+
+    
+    # directorio de documentos abiertos recientemente
+    # probado para windows 8 , 8.1
+    if ($Recent){
+        if ($Credential){
+            Remove-DirectoryContent ([Environment]::GetFolderPath("Recent"))  -Credential $Credential 
+        } else{
+            Remove-DirectoryContent ([Environment]::GetFolderPath("Recent"))
+        }
+    }
+
+
+   
+}
+
+
+
+
+# -----------------------------------------------------------------
+# Trabaja con ficheros PST 
+
+
+
+
+
+
+<#
+.Synopsis
+   Abre un fichero PST (almacenamiento de correo de Microsoft Outlook)
+.DESCRIPTION
+   Abre un fichero PST (almacenamiento de correo de Microsoft Outlook).
+.EXAMPLE
+   El siguiente comando abre un fichero de PST, para trabajar con él
+   Remove-DirectoryContent -pathfileordirectory "c:\tmp\poupelle" 
+.EXAMPLE
+   El siguiente ejemplo elimina el contenido del directorio "c:\tmp\poupelle" 
+   Con las credenciales almacenadas en la variable $cred
+   Remove-DirectoryContent -pathfileordirectory "c:\tmp\poupelle" -Credential $cred
+.EXAMPLE
+   El siguiente ejemplo elimina el contenido del directorio "c:\tmp\poupelle" 
+   Para ello pide las credenciales 
+   Remove-DirectoryContent -pathfileordirectory "c:\tmp\poupelle" -Credential (Get-Credential)
+
+#>
+
+function Open-PSTFile
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    Param
+    (
+        # Ruta absoluta del fichero PST que queremos abrir
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [ValidateScript({If(Test-Path $_){$true}else{Throw "No se encuentra el fichero: $_"}})]        
+        [string]$path,
+
+        # Credenciales/permisos con los que vamos a eliminar el contenido del directorio 
+        [Parameter()]
+        [PSCredential]$Credential
+    )
+
+#   Para abrir el PST se usa una variable de datos global que tiene dos atributos
+#   path y name. Path es la ruta absotuta el fichero y name el nombre del contenedor
+
+
+
+   
+  if ($Credential){
+  $pathfileordirectory + " con crede" #  ls $pathfileordirectory -Recurse | rm -Credential $Credential -recurse -confirm:$false -ErrorAction SilentlyContinue
+  } else{
+  $pathfileordirectory + " sin crede" #  ls $pathfileordirectory -Recurse | rm  -recurse -confirm:$false -ErrorAction SilentlyContinue
+  }
+
+
+}
 
 
 
