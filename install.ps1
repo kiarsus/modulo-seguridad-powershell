@@ -53,7 +53,7 @@ foreach ($item in $listaficheros)
 $basura = Import-Module -Name $nombreModulo -ErrorAction SilentlyContinue
 ""
 Write-Host "Se han importado los siguiente comandos: " -ForegroundColor Green
-Get-Command -Module $nombreModulo -ErrorAction SilentlyContinue
+Get-Command -Module $nombreModulo #-ErrorAction SilentlyContinue
 # eliminamos las variables usadas en el script
 Remove-Variable nombreModulo, DirModulo, listaficheros, UrlModulo, Dirtemporal, basura, navegador, item
 
