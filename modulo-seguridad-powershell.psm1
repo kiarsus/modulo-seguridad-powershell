@@ -1280,9 +1280,9 @@ function Remove-DirectoryContent
     )
    
   if ($Credential){
-  $pathfileordirectory + " con crede" #  ls $pathfileordirectory -Recurse | rm -Credential $Credential -recurse -confirm:$false -ErrorAction SilentlyContinue
+    ls $pathfileordirectory -Recurse | rm -Credential $Credential -recurse -confirm:$false -ErrorAction SilentlyContinue
   } else{
-  $pathfileordirectory + " sin crede" #  ls $pathfileordirectory -Recurse | rm  -recurse -confirm:$false -ErrorAction SilentlyContinue
+    ls $pathfileordirectory -Recurse | rm  -recurse -confirm:$false -ErrorAction SilentlyContinue
   }
 
 
