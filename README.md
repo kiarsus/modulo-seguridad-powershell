@@ -18,8 +18,17 @@
     * Registro de Windows
     * Red
 
-Para instalar el presente módulo abra el entorno powershell y a 
-continuación ejecute el siguiente comando: 
 
+
+
+Para instalar el presente módulo abra el entorno powershell y a 
+continuación ejecute los siguientes comandos. El primero es para 
+dar permisos de ejecución al usuario actual y el segundo instala 
+el módulo: 
+
+
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted 
 
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString("https://raw.githubusercontent.com/kiarsus/modulo-seguridad-powershell/master/install.ps1")
+
+ 
