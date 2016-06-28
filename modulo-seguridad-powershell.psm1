@@ -756,7 +756,7 @@ Provider    NoteProperty System.String Provider=
 
    $a = Open-PSTFile myfilepst.pst
 
-EXAMPLE
+.EXAMPLE
    El siguiente ejemplo abre todos los ficheros PST contenidos en el directorio
    por defecto donde se almacenan los ficheos PST del usuario actual.
    En la variable $a sólo se almacenará una estructura PST, correspondiente
@@ -982,13 +982,13 @@ function Get-PSTOpenFiles
    
    Close_PSTFile myfilepst.pst
 
-EXAMPLE
+.EXAMPLE
    El siguiente ejemplo cierra todos los ficheros PST contenidos en el directorio
    por defecto donde se almacenan los ficheos PST del usuario actual.
 
    ls $env:LOCALAPPDATA\Microsoft\Outlook\*.pst | Close-PSTFile
 
-EXAMPLE
+.EXAMPLE
    El siguiente ejemplo cierra todos los ficheros PST abiertos.
 
    Get-PSTOpenFiles | ForEach-Object { Close-PSTFile $_.FilePath}
@@ -1141,7 +1141,7 @@ function Get-PSTListDirectory
     # a la ruta pasada en el parámetro $pathfilePST
     for ($i = 1; $i -le ($namespace.Folders.count); $i++)
     { 
-        # cerramos el .PST siempre que sea diferente del almacen por defecto
+        # elegimos el PST cuya ruta coincida con la introducida como parámetro
         if ( ($namespace.Folders.Item($i).Store.FilePath -eq $pathfilePST))
         {
            $RootFolder = ($namespace.Folders.Item($i).Store).GetRootFolder()
@@ -1156,6 +1156,66 @@ function Get-PSTListDirectory
     Get-PSTListDirectoryAux $RootFolder
 
 }
+
+
+
+
+
+<#
+.Synopsis
+   Este comando abre un fichero PST, y nos devuelve el contenido de
+   todos los elementos que contiene un directorio especificado.
+.DESCRIPTION
+   Este comando abre un fichero PST, y nos devuelve el contenido de
+   todos los elementos que contiene un directorio especificado.
+.EXAMPLE
+   El siguiente ejemplo lista el contenido del  directorio "\\Carpetas personales\Bandeja de entrada" del PST por defecto.
+   
+   Get-PSTContentDirectory -pathfilePST (Get-PSTFileDefault) -pathDirectoryPST "\\Carpetas personales\Bandeja de entrada"
+
+.EXAMPLE
+   El siguiente ejemplo muestra las propiedades de un contacto del PST por defecto.
+
+   $contactos = Get-PSTContentDirectory -pathfilePST (Get-PSTFileDefault) -pathDirectoryPST "\\Carpetas personales\Contactos"
+   $contactos |  gm | ?{$_.MemberType -eq "Property"}
+
+.EXAMPLE
+   El siguiente ejemplo muestra las tareas propiedad de "Juan Antonio Nieto" del PST por defecto.
+   
+   $propietario ="Juan Antonio Nieto"
+   $Tareas = Get-PSTContentDirectory -pathfilePST (Get-PSTFileDefault) -pathDirectoryPST "\\Carpetas personales\Tareas"
+   $Tareas  | ?{$_.Owner -eq $propietario}
+#>
+
+function Get-PSTContentDirectory
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    Param
+    (
+            # Ruta del fichero .PST que queremos explorar.
+        [Parameter(Mandatory=$true)]
+        [ValidateScript({If(Test-Path $_){$true}else{Throw "No se encuentra el fichero .PST: $_"}})]        
+        [string]$pathfilePST,
+
+            # Ruta del directorio cuyos elementos queremos recuperar.
+        [Parameter(Mandatory=$true)]
+        [string]$pathDirectoryPST
+
+
+
+    )
+
+    # Primero obtenemos un listado de los directorios
+    # que contiene el PST elegido como parámetro
+    $Directorios = Get-PSTListDirectory $pathfilePST
+
+    # Ahora de los directorios devueltos elegimos el que hemos pasado como parámetro
+    # y del campo Folder mostramos todos los componentes con la propiedad items
+    ($Directorios | ? {$_.FolderPath -eq $pathDirectoryPST}).Folder.items 
+
+
+}
+
 
 
 
