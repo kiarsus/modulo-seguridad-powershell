@@ -210,15 +210,15 @@ function Unlock-AccountUserName
 
 <#
 .Synopsis
-   Coprueba si existe una regla RansomWare. 
+   Comprueba si existe una regla RansomWare. 
 
 .DESCRIPTION
-   Coprueba si existe una regla RansomWare. 
+   Comprueba si existe una regla RansomWare. 
 
 .EXAMPLE    
     Test-RansomWareRuleName "Created_c:\prueba\_senuelo\*.*"
 
-    El comando camprueba si existe la regla "Created_c:\prueba\_senuelo\*.*".
+    El comando comprueba si existe la regla "Created_c:\prueba\_senuelo\*.*".
     En caso afirmativo devuelve $true.
     En caso negativo devuelve $false.
     
@@ -232,7 +232,7 @@ function Test-RansomWareRuleName
     Param
     (
 
-        # Directorio que se va a proteger con la regla
+        # Nombre de la regla RansomWare
         [Parameter(Mandatory=$true,
                    ValueFromPipeline=$true,
                    ValueFromPipelineByPropertyName=$true)]
@@ -267,10 +267,10 @@ function Test-RansomWareRuleName
 
 <#
 .Synopsis
-    Obtiene los ficheros que existen abiertos a través de la red. 
+    Obtiene los ficheros abiertos a través de la red. 
 
 .DESCRIPTION
-    Obtiene los ficheros que existen abiertos a través de la red. 
+    Obtiene los ficheros abiertos a través de la red. 
 
 .EXAMPLE    
     Get-NetOpenFiles 
@@ -340,12 +340,12 @@ function Get-NetOpenFiles
 .EXAMPLE    
     Get-FileOwner c:\prueba 
 
-    Obtiene el nombre del propietario del directorio c:\prueba
+    Obtiene el propietario del directorio "c:\prueba"
 
 .EXAMPLE    
     Get-FileOwner c:\prueba\sss.txt
 
-    Obtiene el nombre del propietario del fichero c:\prueba\sss.txt
+    Obtiene el propietario del fichero "c:\prueba\sss.txt"
 
 
 
@@ -396,32 +396,32 @@ function Get-FileOwner
 
 <#
 .Synopsis
-   Crea una regla de protección ante RansomWare. 
+   Crea una regla de protección RansomWare. 
 
 .DESCRIPTION
-   Crea una regla de protección ante RansomWare. Es necesario indicar 
+   Crea una regla de protección RansomWare. Es necesario indicar 
    el directorio a supervisar y al menos un evento a supervisar. 
-   Como medida de respuesta se bloqueará al usuario que desencadene el 
-   evento y se cerrará la sesión que tenga establecida.
-   La regla se almacena en la variable global $Global:ReglasRansomWare
+   Como medida de respuesta se bloquea el usuario que desencadena el 
+   evento y se cierran las sesiones que tenga establecida.
 
 .EXAMPLE    
     new-RansomWareRule -PathDirectory "c:\compartido\e" -Filter "*.*" -Renamed
 
-    El comando crea una regla antiRansomWare para el directorio "c:\compartido\e", con el filtro de elementos "*.*" 
-    No se incluyen los subdirectorios. 
+    El comando crea una regla RansomWare para el directorio "c:\compartido\e", con el filtro de elementos "*.*" 
+    No aplica al contenido de los subdirectorios. 
     
-    Inhabilitará la cuenta del usuario que cambie el nombre de un fichero o directorio.
+    Inhabilita la cuenta del usuario, que cambie el nombre de un fichero o directorio incluidos en "c:\compartido\e".
         
 .EXAMPLE    
     new-RansomWareRule -PathDirectory "c:\compartido\e" -Filter "*.ht*" -Created -Subdirectories -FileLog c:\log\RansomWare.log
     
-    El comando crea una regla antiRansomWare para el directorio "c:\compartido\e". La regla se activa cada vez que 
+    El comando crea una regla RansomWare para el directorio "c:\compartido\e". La regla se activa cada vez que 
     se crea un fichero, cuya extensión comience por "ht". Dicha regla tiene efecto en cualquiera de los subdirectorios
-    que cuelguen de "c:\comporatido\e", de manera recursiva.   
+    y sus descendientes "c:\comporatido\e".   
      
-    
-    Una vez habilitada inabilitará la cuenta de usuario que cambie el nombre de un fichero o directorio.
+        
+    Inhabilita la cuenta del usuario, que cree un fichero o directorio con las características descritas.
+
 
 #>
 function new-RansomWareRule
@@ -432,7 +432,7 @@ function new-RansomWareRule
     Param
     (
 
-        # Directorio que se va a proteger con la regla
+        # Directorio que se va a proteger con la regla.
         [Parameter(Mandatory=$true,
                    ValueFromPipeline=$true,
                    ValueFromPipelineByPropertyName=$true)]
@@ -464,7 +464,8 @@ function new-RansomWareRule
         [switch]$Renamed=$false,
 
 
-        # Especifica ruta completa de un fichero log.
+        # Especifica ruta completa de un fichero log, en el que 
+        # se volcarán los eventos detectados y las acciones realizadas.
         [ValidateScript({If(  (Test-Path $_.Substring(0,$_.LastIndexOf("\"))) -or ($_ -eq ""  ) ){$true}else{Throw "No se encuentra el directorio: $_"}})]        
         [string]$FileLog=""
     )
@@ -799,20 +800,20 @@ function new-RansomWareRule
 
 <#
 .Synopsis
-   Elimina una regla de protección ante RansomWare. 
+   Elimina una regla de protección RansomWare. 
 
 .DESCRIPTION
-   Elimina una regla de protección ante RansomWare. Es necesario que se proporcione
-   el nombre de la regla.
+   Elimina una regla de protección RansomWare. Es necesario que se proporcione
+   el nombre de una regla.
 
 .EXAMPLE    
-        Remove-RansomWareRule -RuleName $Global:ReglasRansomWare[0].Regla
+        Remove-RansomWareRule -RuleName (Get-RansomWareRule)[0].Regla
 
-        Elimina la primera regla almacenada
+        Elimina la primera regla RansomWare creada.
 .EXAMPLE
-         $Global:ReglasRansomWare | where-object {Remove-RansomWareRule -Rule $_.Regla}
+         Get-RansomWareRule | where-object {Remove-RansomWareRule -Rule $_.Regla}
 
-        Elimina todas reglas almacenadas
+        Elimina todas reglas RansomWare creadas.
 
 
 
@@ -825,7 +826,7 @@ function Remove-RansomWareRule
     Param
     (
 
-        # Nombre de la regla RansomWare que se pretende eliminar
+        # Nombre de la regla RansomWare a eliminar.
         [Parameter(Mandatory=$true,
                    ValueFromPipeline=$true,
                    ValueFromPipelineByPropertyName=$true)]
@@ -850,16 +851,15 @@ function Remove-RansomWareRule
 
 <#
 .Synopsis
-   Lista las reglas de protección ante RansomWare. 
+   Lista las reglas de protección RansomWare. 
 
 .DESCRIPTION
-   Lista las reglas de protección ante RansomWare almacenadas en la variable 
-   $Global:ReglasRansomWare
+   Lista las reglas de protección RansomWare.
         
 .EXAMPLE
     Get-RansomWareRule
 
-    El ejemplo lista todas las reglas de protección ante RansomWare. 
+    El ejemplo lista todas las reglas de protección RansomWare. 
     
 
 .EXAMPLE
@@ -869,8 +869,8 @@ function Remove-RansomWareRule
     
     
     
-    El ejemplo lista todas las reglas de protección ante RansomWare. 
-    Creadas para un directorio determinado
+    El ejemplo lista todas las reglas de protección ante RansomWare,
+    creadas para el directorio "c:\pruebas"
     
 
 
