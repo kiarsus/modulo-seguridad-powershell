@@ -1,4 +1,17 @@
+# Fin de Grado del “Curso de adaptación al Grado de Ingeniería
+# Informática, de la Universidad Internacional de la Rioja.
 
+#   Dicho trabajo se encuentra Publicado en el repositorio 
+# Git-Hub, bajo la licencia GNU General Public License.
+# https://github.com/kiarsus/modulo-seguridad-powershell
+#   Trabajo realizado única y exclusivamente por el Alumno: 
+# Enrique Parras Garrido.
+#
+#
+#
+#
+#
+#
 # Este Script es utilizado para instalar el módulo
 #
 #  Descargamos los ficheros del módulo a un directorio temporal del usuario
