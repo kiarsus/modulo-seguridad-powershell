@@ -1,3 +1,5 @@
+#   El presente fichero forma parte del módulo de PowerShell, 
+# “modulo-seguridad-powershell”, desarrollado para el Trabajo 
 # Fin de Grado del “Curso de adaptación al Grado de Ingeniería
 # Informática, de la Universidad Internacional de la Rioja.
 
