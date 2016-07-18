@@ -22,7 +22,7 @@ ModuleVersion = '1.0'
 Author = 'Enrique PARRAS GARRIDO'
 
 # Copyright statement for this module
-Copyright = '(c) 2016 Enrique Parras Garrido. All rights reserved.'
+Copyright = '2016 Enrique Parras Garrido. Licencia GNU General Public License. Desarrollo para el Trabajo Fin de Grado del “Curso de adaptación al Grado de Ingeniería Informática, de la Universidad Internacional de la Rioja.'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '3.0'
