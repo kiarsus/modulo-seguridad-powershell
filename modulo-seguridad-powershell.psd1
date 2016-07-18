@@ -21,6 +21,9 @@ ModuleVersion = '1.0'
 # Author of this module
 Author = 'Enrique PARRAS GARRIDO'
 
+# Company Name 
+CompanyName = 'Universidad Internacional de la Rioja.'
+
 # Copyright statement for this module
 Copyright = '2016 Enrique Parras Garrido. Licencia GNU General Public License. Desarrollo para el Trabajo Fin de Grado del “Curso de adaptación al Grado de Ingeniería Informática, de la Universidad Internacional de la Rioja.'
 
