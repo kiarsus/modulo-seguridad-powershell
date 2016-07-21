@@ -23,17 +23,36 @@
 #
 # El presente módulo lo dividimos en varios apartados atendiendo a 
 # los recursos usados para la recogida de evidencias, monitorización 
-# de eventos y la contención de determinados ataques:
-# 
+# de eventos y la contención de determinados ataques.
+#
+# Inicialmente en la memoria se contemplaron los apartados
+#
 #    * Memoria (procesos y servicios)
 #    * Almacenamiento en disco
 #    * Registro de Windows
 #    * Red
+#
+#
+# Pero hay funciones que escapan a esta clasificación, ya que hacen 
+# uso de diferentes recursos clasificados en varios apartados.
 # 
+#    * RansomWare
+#    * Red
+#    * Memoria (procesos y servicios)
+#    * Almacenamiento en disco
+#        - Trabajar con Almacenes de correo Outlook (Ficheros .PST) 
+#        - Listado y eliminación de ficheros temporales 
+#    * Registro de Windows
+#    * Memoria (procesos y servicios)
 
 
 
 
+
+
+
+
+# ------------------------- RansomWare ------------------------- 
 # Este apartado comprende los recursos para poder detectar y detener
 # las acciones de un RansomWare:
 #
@@ -44,6 +63,12 @@
 # cuenta del usuario y a cerrar las conexiones que tenga abiertas.
 # Existe la posibilidad de especificar un nombre de fichero como 
 # log.
+#
+#  Para que la función principal de este apartado sea funcional 
+# se apoya en otros comandos y una estructura de datos que 
+# permite gestionar las diferentes reglas RansomWare definidas.
+# 
+# 
 #-----------------------------------------------------------
 #
 #
@@ -916,22 +941,46 @@ function Get-RansomWareRule
 
 
 
-
-
-
-
-#  Módulo de red
-# Este apartado comprende los recursos para trabajar con la red entre
-# los que se incluye:
+# -------------------- Apartado de red ------------------------- 
+# Este apartado comprende los recursos para poder trabajar con 
+# la red.
+#
+#
+#  En concreto nos hemos centrado en la capacidad de detectar y
+# repeler los ataques Man in The Middle. Para ello se han 
+# implementado funciones para recuperar el contenido de la 
+# tabla ARP y analizarlo, para ver si a lo largo del tiempo
+# se produce un posible ataque.
+#  También se proveen los mecanismos necesarios para
+# bloquear a un atacante, haciendo uso de un sistema de 
+# gestión de reglas que nos permiten bloquear o desbloquear
+# una máquina en la red.
+# 
+#  Igualmente se ha implementado una función para poder 
+# recuperar el nombre de los fabricantes de una determinada
+# dirección MAC de un dispositivo de red.
+#
+#  A continuación se listan las funciones que desempeñan los 
+# comandos implementados:
 #
 #   *  Listar tabla ARP del equipo local.
-#   *  Listar el fabricante de una interfaz de red.
+#   *  Listar los fabricantes de interfaces de red y el rango de direcciones MAC.
+#   *  Recuperar el fabricante de un rango de dirección MAC.
+#   *  Recuperar el rango de direcciones MAC de un fabricante.
+#   *  Comprobar si hay ataque Man In The Middle.
+#   *  Crear una regla de protección contra Man In The Middle.
+#   *  Eliminar una regla de protección contra Man In The Middle.
+#   *  Recupear una regla de protección contra Man In The Middle.
+#   *  Comprobar si existe una regla de protección contra Man In The Middle.
 #   *  Listar tabla ARP del equipo local.
-#   *  Listar tabla ARP del equipo local.
-#   *  Listar tabla ARP del equipo local.
-#
-#   Módulo de red
 #-----------------------------------------------------------
+#
+#
+#
+#
+#
+
+
 
 
 
@@ -1556,22 +1605,34 @@ function Get-NetworkProviderName{
 
 
 
+# ------------------------- Almacenamiento ------------------------- 
+# Este apartado comprende los recursos para trabajar con el sistema 
+# de almacenamiento:
+#  
+#  Dentro de este apartado se han definido dos apartados más:
+#
+#        - Trabajar con Almacenes de correo Outlook (Ficheros .PST) 
+#        - Listado y eliminación de ficheros temporales 
+#
+#-----------------------------------------------------------
 
 
 
 
 
-#  módulo  de ficheros o sistema de archivo
-
-
-
-
-
-# Este apartado implementa las funciones que permiten
-# trabajar con ficheros .PST usados 
+#        - Trabajar con Almacenes de correo Outlook (Ficheros .PST) 
+#
+#  Este apartado provee los comandos y las estructuras de 
+# datos necesarias para poder trabajar con ficheros de 
+# almacenamiento de correos electrónicos de Microsoft Outlook 
+# que tienen extensión .PST
+#
+#  Por medio de este desarrollo se permite abrir y cerrar ficheros
+# .PST, comprobar si están abiertos, recorrer cada uno de sus 
+# elementos (tanto bandejas de correos, como contactos, agenda,
+# subscripciones, etc.).
 #
 #
-# trabajar con ficheros PST 
 #--------------------------------------------------------------
 
 
@@ -2049,14 +2110,14 @@ function Get-PSTContentDirectory
 
 
 
-
+# -----Listado y Eliminado de temporales --------------
 # Este apartado implementa las funciones que permiten
 # el listado y eliminación de ficheros temporales tanto 
 # propios del usuario como del sistema.
 #
 #
-
-# trabajar con ficheros
+#
+# 
 #-------------------------------------------------------
 
 
@@ -2494,6 +2555,748 @@ function Remove-FileTemp
         } 
     }
 }
+
+
+
+
+
+
+
+
+
+
+# ------------------- Registro de Windows ------------------ 
+# Este apartado comprende los recursos para poder trabajar
+# con el Registro de Windows:
+#
+#  A través de las últimas versiones de PowerShell se proveen
+# herramientas que permiten recorrer el registro de 
+# Windows, hacer inserciones, actualizaciones y eliminados.
+#
+#  Sin embargo no se han encontrado en PowerShell 
+# herramientas para montar ficheros del registro de Windows 
+# y que permita su gestión. Para ello se ha creado este
+# apartado que provee de cuatro comandos y de la estructura
+# de datos que permite la gestión de montado y desmontado 
+# de tantos ficheros de registro de Windows como se desee.
+#
+# Los comandos que nos permiten operar son las siguientes:
+# 
+#    -Montar fichero de registro de Windows.
+#    -Desmontar fichero de registro de Windows.
+#    -Comprobar si un fichero ya está montado.
+#    -Listar ficheros montados y sus características.
+#
+#
+#
+#
+#
+#
+#
+#-----------------------------------------------------------
+#
+
+
+
+
+
+
+<#
+.Synopsis
+    Obtiene información de los ficheros de registro de Windows montados. 
+
+
+.DESCRIPTION
+    Obtiene información de los ficheros de registro de Windows montados. 
+    Acepta como parámetro la ruta de un fichero de registro de Windows.
+.EXAMPLE    
+    Get-RegWindowsFile
+
+    Obtiene información de los ficheros de registro de Windows montados. 
+        
+.EXAMPLE    
+    (Get-RegWindowsFile).PathFile
+
+    Obtiene la ruta de los ficheros de registro de Windows montados. 
+
+.EXAMPLE    
+    (Get-RegWindowsFile c:\Users\juan\NTUSER.DAT).PSDriver.Name
+
+    Obtiene el nombre de la unidad PSDrive en la que se encuentra 
+    montada el fichero de registro de Windows 
+    c:\Users\juan\NTUSER.DAT
+        
+#>
+function Get-RegWindowsFile
+
+{
+
+    [CmdletBinding(ConfirmImpact='Medium')]
+    
+    Param
+    (
+
+        # Nombre del fichero de registro de Windows a desmontar.
+        [Parameter(Mandatory=$false,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [string]$PathFile
+    )
+
+    
+    # Devuelve la variable global en la que se almacena la 
+    # información referente al fichero de registro de Windows.
+    #
+    # Cuando se especifica la ruta de un fichero de registro de 
+    # Windows, se aplica el filtro correspondiente.
+    if ($PathFile -eq "")
+    {
+        return ($Global:RegWindowsFile) 
+    }
+
+    return ($Global:RegWindowsFile| Where-Object {$_.PathFile -eq $PathFile}) 
+    
+    
+
+
+}
+
+
+
+
+
+
+
+
+
+<#
+.Synopsis
+    Comprueba si se ha montado un fichero de registro de Windows. 
+
+.DESCRIPTION
+    Comprueba si se ha montado un fichero de registro de Windows. 
+    En el caso afirmativo devuelve $true.
+    En caso negativo devuelve $false. 
+
+.EXAMPLE    
+    Test-RegWindowsFile c:\users\juan\NTUSER.DAT
+
+    Comprueba si se ha montado el fichero de registro de Windows 
+    correspondiente al usuario "juan".
+        
+#>
+function Test-RegWindowsFile
+
+{
+   
+    Param
+    (
+
+        # Nombre del fichero de registro de Windows a comprobar.
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [string]$PathFile
+    )
+   
+    
+    # En el caso de que en el array de entradas de ficheros
+    # de registros de Windows existan coincidencias, con
+    # la ruta pasada como parámetro, devolvemos $true.
+    # En caso contrario devolvemos $false 
+
+    if (Get-RegWindowsFile | Where-Object {$_.PathFile -eq $PathFile})
+    {
+        return $true
+    }
+    return $false
+
+}
+
+
+
+
+
+
+
+
+
+
+
+<#
+.Synopsis
+    Monta un fichero de registro de Windows pasado como parámetro. 
+
+.DESCRIPTION
+    Monta un fichero de registro de Windows pasado como parámetro  
+    y crea la unidad PSDrive correspondiente para acceder a su 
+    contenido.
+
+.EXAMPLE    
+    Mount-RegWindowsFile -PathFile "c:\registros\fichero.dat"
+
+    Monta un fichero del registro de Windows "c:\registros\fichero.dat"
+    y crea la unidad PSDriver correspondiente.
+    Para ver la unidad PSDrive asignada a un ficheros usar el comando
+    
+    Get-RegWindowsFile 
+    
+.EXAMPLE    
+    ls -File | foreach {Mount-RegWindowsFile $_.FullName}
+
+    Monta todos los ficheros del registro de windows contenidos
+    en el directorio actual y crea la unidad PSDriver correspondiente.
+    Para ver la unidad PSDrive asignada a un ficheros usar el comando
+    
+    Get-RegWindowsFile 
+    
+        
+#>
+function Mount-RegWindowsFile
+
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    
+    Param
+    (
+
+        # Fichero de registro de Windows a montar.
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [ValidateScript({If(Test-Path $_){$true}else{Throw "No se encuentra el fichero: $_"}})]        
+        [string]$PathFile
+    )
+    
+    # En el caso de que no se encuentre montado el registro de Windows 
+    # HKEY_LOCAL_MACHINE lo montamos en la unidad hklm de PSDrive. 
+
+    if (-not (Get-PSDrive | where {$_.Name -eq "hklm" }) ) 
+    {
+        New-PSDrive -Name HKLM -PSProvider Registry -Root HKEY_LOCAL_MACHINE -Scope GLOBAL
+    }
+
+
+
+    # Comprobamos que el fichero de registro de Windows que queremos montar
+    # no se encuentra ya montado.
+    if (($Global:RegWindowsFile | Where-Object { $_.PathFile -eq $PathFile}) -ne $null){
+        Throw "El fichero de registro ya fue montado:" 
+    }
+
+
+    # Para montar registro de Windows en un nuevo PSDrive.
+    # Usamos nombres de unidades fijas todas empiezan con la
+    # cadena "HKTmp" y a continuación se añade un número. 
+    # Este número lo almacenamos en las entradas de la variable
+    # $Global:RegWindowsFile en el campo "Num"
+    # 
+    # Por lo que los nombres de unidades tendrán el siguiente 
+    # formato: HKTmp1, HKTmp2, HKTmp3, HKTmp4, HKTmp5, etc 
+    # 
+    # Estos mismos nombres son usados para montar el fichero 
+    # de registro de Windows sobre el registro 
+    # HKEY_LOCAL_MACHINE es decir que las claves correspondientes
+    # a los nuevos ficheros de registro de Windows montados tendrían 
+    # el siguiente formato:
+    # HKLM\HKTmp1, HKLM\HKTmp2, HKLM\HKTmp3, etc.
+    #
+    # Calculamos el número del PSDrive del registro del fichero 
+    # de registro de Windows que queremos insertar.
+    # 
+
+    if ($Global:RegWindowsFile -eq $null)
+    {
+        # Si aún no hemos montado ningún fichero,
+        # el primer fichero a insertar es el 1, con
+        # lo que:
+        # clave: "HKLM\HKTmp1"
+        # unidad PSDrive: "HKTmp1:"
+        $num =1
+    }
+    else
+    {
+        # En el caso de que ya haya abierto un fichero de registro de Windows
+        # calculamos el siguiente número. Para ello al mayor número de los
+        # ficheros abiertos lo incrementamos en uno.
+        $num = ($Global:RegWindowsFile | ForEach-Object {$_.Num} | Sort-Object -Descending)[0] +1
+    }
+
+    $basura = REG LOAD HKLM\HKTmp$num $PathFile  
+    
+    # Si el proceso de montaje del fichero de registro de Windows
+    # da error, abortamos la ejecución del comando y salimos sin crear 
+    # cambios en la variable global $Global:RegWindowsFile. No se    
+    # monta el fichero de registro de Windows en la unidad calculada.
+    $NuevaRuta = "HKLM:\HKTmp" + [string]$num
+    
+    # Detectamos error en el caso de que no podamos acceder
+    # a la ruta que se crea 
+    if (-not (Test-Path $NuevaRuta))
+    {
+        return
+    }
+    
+    # El siguiente objeto es para añadir en el registro de ficheros
+    # de registros de Windows la entrada correspondiente.
+    # Importante especificar en el comando PSDrive el parámetro 
+    # Scope con valor Global, para que al salir de la función 
+    # tengamos acceso a la unidad creada.
+
+    $obj = New-Object PSObject 
+    $obj | Add-Member PSDriver (New-PSDrive -Name HKTmp$num -PSProvider Registry -Root HKLM\HKTmp$num -Scope global)
+    $obj | Add-Member Num $num
+    $obj | Add-Member PathFile $PathFile
+    
+
+    # Comprobamos si se ha creado correctamente 
+    # la unidad PSDrive.
+    # En caso contrario desmontamos la clave 
+    # HKTmp$num de HKLM y abortamos el proceso.
+    $NombreUnidad = "HKTmp" +[string]$num
+    if (-not (Get-PSDrive | where {$_.name -eq $NombreUnidad }) )
+    {
+        $basura = REG UNLOAD HKLM\HKTmp$num  
+        return
+    }
+
+    # Si es el primer fichero abierto es necesario
+    # inicializar el array a vacío.
+    if ($Global:RegWindowsFile -eq $null)
+    {    
+        # Iniciamos la estructura donde vamos a almacenar los ficheros 
+        # de registro de Windows al conjunto vacío.
+        $Global:RegWindowsFile = @()
+    }
+    
+        
+    # Añadimos la entrada al array de ficheros de registro de Windows abiertos.
+    $Global:RegWindowsFile = $Global:RegWindowsFile + $obj
+
+
+}
+
+
+
+<#
+.Synopsis
+    Desmonta un fichero de registro de Windows cuya ruta es pasada
+    como parámetro. 
+
+.DESCRIPTION
+    Desmonta un fichero de registro de Windows cuya ruta es pasada
+    como parámetro y elimina la unidad PSDrive correspondiente, para 
+    acceder a su contenido.
+
+.EXAMPLE    
+    Dismount-RegWindowsFile -PathFile C:\users\qq\NTUSER.DAT
+
+    Desmonta el fichero de registro de Windows "C:\users\qq\NTUSER.DAT" 
+    y elimina la unidad PSDrive correspondiente, para acceder a su 
+    contenido.
+.EXAMPLE    
+    Get-RegWindowsFile| foreach {Dismount-RegWindowsFile $_.PathFile}
+
+    Desmonta todos los ficheros de registro de Windows que se encuentran
+    montados y elimina la unidad PSDrive correspondiente, para acceder a
+    su contenido.
+        
+
+
+
+#>
+function Dismount-RegWindowsFile
+
+{
+
+    [CmdletBinding(ConfirmImpact='Medium')]
+    
+    Param
+    (
+
+        # Nombre del fichero de registro de Windows a desmontar.
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [ValidateScript({If(Test-RegWindowsFile $_){$true}else{Throw "El fichero de registro de Windows '$_' no se encuentra abierto."}})]        
+        [string]$PathFile
+    )
+
+
+    # Obtenemos el nombre de la unidad PSDrive correspondiente 
+    # al fichero de registro de Windows.
+    $name = (Get-RegWindowsFile | Where-Object {$_.PathFile -eq $PathFile}).PSDriver.Name
+
+    # A continuación desmontamos el fichero de registro de Windows.
+    # El montaje de los ficheros de registro de Windows afecta
+    # a tres estructuras y por lo tanto debemos realizar tres 
+    # operaciones.
+    # En el caso que alguna de las operaciones falle, tenemos que 
+    # restaurar el estado inicial, de cada una de ellas
+    # para evitar la inconsistencia de las estructuras implicadas.
+    #
+    # Los cambios los hacemos en tres pasos:
+    
+    #  - eliminamos la unidad PSDrive
+    Get-PSDrive -Name $Name | Remove-PSDrive
+    # si no se ha podido eliminar el PSDrive abortamos la operación.
+    if ((Get-PSDrive | where {$_.name -eq $name}))
+    {
+      #  New-PSDrive -Name $name -PSProvider Registry -Root HKLM\$name -Scope global
+      #  Throw "No se puede desmontar el fichero de registro de Windows, porque la unidad $name está en uso."
+        return
+    }
+
+    #  - desmontamos el fichero
+    $basura = REG UNLOAD HKLM\$name
+    
+    # Si no podemos desmontar el fichero de registro de Windows abortamos la operación
+    # y creamos de nuevo el punto de montaje del PSDrive 
+    if (Test-Path HKLM:\$name)
+    {
+        New-PSDrive -Name $name -PSProvider Registry -Root HKLM\$name -Scope global
+        return
+    }
+    
+
+
+    #  - lo reflejamos en la variable global $Global:RegWindowsFile
+    $Global:RegWindowsFile = $Global:RegWindowsFile | Where-Object {$_.PSDriver.Name -ne $name}
+    
+    # En el caso de que sólo quede un elemento lo transforma de array a entrada, 
+    # por lo que debemos convertirlo en array de nuevo. En caso contrario da 
+    # problemas al añadir nuevas entradas.
+    if ($Global:RegWindowsFile -ne $null)
+    {
+        if  ($Global:RegWindowsFile.count -eq $null) 
+        {
+            $Global:RegWindowsFile = @() +  $Global:RegWindowsFile
+        } 
+    }
+
+}
+
+
+
+
+
+
+
+
+# ----------- Memoria (procesos y servicios)---------------- 
+# Este apartado comprende los recursos para poder trabajar 
+# con la memoria y los servicios.
+#
+# Las principales funciones de este apartado son recopilar
+# información de los procesos y los servicios en memoria.
+# En todas las funciones implementadas en este apartado se
+# obtienen las rutas en disco de los procesos, servicios y 
+# ficheros en los que se apoyan.
+# A través de estos ficheros se obtienen los hash. A través 
+# de estos últimos se puede buscar en bases de conocimientos
+# si estos elementos implican algún riesgo para nuestro 
+# sistema.
+# La legitimidad de los ficheros se puede verificar a través de 
+# cualquiera de las API disponibles. Como ejemplo podemos 
+# referenciar a las disponibles por Internet, una de ellas es 
+# Virus Total, de la que ya existe una API para PowerShell. 
+#-----------------------------------------------------------
+
+
+
+
+
+
+<#
+.Synopsis
+   Obtiene una lista de todos los módulos usados por un proceso.
+.DESCRIPTION
+   Obtiene una lista de todos los módulos usados por un proceso.
+   Y calcula  su SHA256
+   Por defecto muestra sólo los módulos principales.
+   Se pueden aplicar filtros por el Id y por el nombre de proceso.
+.EXAMPLE
+    Get-ProcessMolules -ProcessName notepad -AllModules
+    
+    Muestra todos los módulos del proceso con nombre "notepad".
+
+.EXAMPLE
+    Get-ProcessMolules -Id 1008 -AllModules
+    
+    Muestra todos los módulos del proceso con Id 1008.
+
+.EXAMPLE
+    Get-ProcessMolules 
+    
+    Muestra los módulos principales de todos los procesos en memoria.
+
+.EXAMPLE
+    Get-ProcessMolules -AllModules
+    
+    Muestra todos los módulos de todos los procesos en memoria.
+
+
+#>
+
+function Get-ProcessMolules
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    Param
+    (
+
+        # Permite filtrar los módulos por Id de proceso.
+        [Parameter(Mandatory=$false,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [int]$Id,
+
+        # Permite filtrar los módulos por nombre de proceso.
+        [Parameter(Mandatory=$false,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [string]$ProcessName,
+
+        # Muestra todos los módulos, tanto principales como secundarios. 
+        # Si no se especifica sólo se muestran los módulos principales.
+        [Parameter(Mandatory=$false,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [switch]$AllModules
+
+        
+    )
+
+    # Obtenemos los procesos 
+    $procesos = ps | where {$_.Id -match $id -and $_.Name -match $ProcessName}
+    
+    
+    # La siguiente variable presenta una estructura de datos para guardar
+    # los módulos usados por los procesos en memoria. Incluye tanto 
+    # el módulo principal como el resto de módulos.
+    # Es un array en el que cada entrada se compone de los campos:
+    #   Id del proceso 
+    #   Nombre del proceso
+    #   Si es modulo principal o no
+    #   Ruta completa del módulo
+    #   La firma resumen hash de SHA256
+
+    $ModulosProcesos = @()
+	
+    # Por cada proceso recuperado obtenemos su módulo principal 
+    # y lo almacenamos en el array $ModulosProcesos
+    foreach ($proceso in $Procesos )
+    {
+        # Extraemos el módulo principal
+        $obj = New-Object PSObject 
+        $obj | Add-Member Id $proceso.id
+        $obj | Add-Member Name $proceso.name
+        # El siguiente campo nos permite diferenciar los módulos 
+        # principales de los que no lo son.
+        $obj | Add-Member MainModule $true
+        # Comprobamos que existe módulo principal
+        # en caso contrario no calculamos el hash, para evitar error.
+        if ($proceso.MainModule.FileName -eq $null)
+        {
+            $obj | Add-Member SHA256 $null
+        }
+        else
+        {
+            $obj | Add-Member SHA256 (Get-FileHash -Algorithm SHA256 -Path $proceso.MainModule.FileName).Hash
+        }
+        $obj | Add-Member ModuleName $proceso.MainModule.FileName
+        # Añadimos la entrada al array $ModulosProcesos.
+        $ModulosProcesos = $ModulosProcesos + $obj
+        
+        # Recuperamos los módulos no principales, sólo en el caso
+        # de que se proporcione el parámetro "-AllModules".
+        if ($AllModules) 
+        {
+            $modulos = $proceso.Modules
+            # Para cada módulo no principal recuperado
+            # creamos una entrada.
+            foreach ($modulo in $modulos)
+            {
+                $obj = New-Object PSObject 
+                $obj | Add-Member Id $proceso.id
+                $obj | Add-Member Name $proceso.name
+                # El siguiente campo nos permite diferenciar los módulos 
+                # principales de los que no lo son.
+                $obj | Add-Member MainModule $false
+                # Comprobamos que existe módulo en caso contrario
+                # no calculamos el hash, para evitar error.
+                if ($modulo.FileName -eq $null)
+                {
+                    $obj | Add-Member SHA256 $null
+                }
+                else
+                {
+                    $obj | Add-Member SHA256 (Get-FileHash -Algorithm SHA256 -Path $modulo.FileName).Hash
+                }
+                $obj | Add-Member ModuleName $modulo.FileName
+
+                # Insertamos cada uno de los módulos no 
+                # principalesen el array $ModulosProcesos
+                $ModulosProcesos = $ModulosProcesos + $obj
+            }
+        }
+    }
+    # Devolvemos el array con los módulos recuperados.
+    $ModulosProcesos 
+}
+
+
+
+
+
+
+
+<#
+.Synopsis
+   Obtiene la lista de las rutas de ficheros ejecutables cargados en el arranque.
+.DESCRIPTION
+   Obtiene la lista de las rutas de ficheros ejecutables cargados en el arranque.
+   Y calcula el hash SHA256 de dicha ruta.
+
+.EXAMPLE
+    Get-StartupCommand
+    
+   Obtiene la lista de las rutas de ficheros ejecutables cargados en el arranque.
+   Y calcula el hash SHA256 de dicha ruta.
+
+.EXAMPLE
+    Get-StartupCommand hot
+    
+   Obtiene la lista de las rutas de ficheros ejecutables cargados en el arranque,
+   cuyo nombre contiene la cadena "hot"
+   Y calcula el hash SHA256 de dicha ruta.
+
+#>
+
+function Get-StartupCommand
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    Param
+    (
+
+        # Permite filtrar por nombre, los ficheros ejecutables cargados en el arranque.
+        [Parameter(Mandatory=$false,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [string]$Name
+        
+    )
+
+    # Obtenemos los ficheros  ejecutables que se inician en el arranque.
+
+    $comandos = gwmi Win32_StartupCommand | where-object {$_.Name -match $Name } 
+
+    # La siguiente variable presenta una estructura de datos para guardar
+    # la ruta de los ficheros ejecutables cargados en el arranque.
+    # Es un array en el que cada entrada se compone de los campos:
+    #   Nombre asignado al fichero ejecutable 
+    #   Ruta completa del fichero ejecutable 
+    #   La firma resumen del fichero ejecutables hash de SHA256
+
+    $ListaComandos = @()
+    # Por cada entrada en el arranque
+    # obtenemos los diferentes ficheros
+    foreach ($comando in $comandos){
+        $rutas = $comando.Command
+        $rutas = $rutas.split('"')
+        $rutas = $rutas  | Where-Object { ($_ -match "\\" ) }| ForEach-Object { $_.Substring(0, $_.lastIndexOf(".") + 4) }
+        # Por cada ruta detectada creamos una entrada en $ListaComandos
+        ForEach ($ruta in $rutas){
+            # Por cada comando sustituimos la variable de entorno de ms-dos 
+            # por la de Power-Shell.
+            $ruta= $ruta.Replace("%ProgramFiles%",$env:ProgramFiles)
+            
+            # Creamos una entrada por cada ruta detectada.
+            $obj = New-Object PSObject 
+            $obj | Add-Member Name $comando.Name
+            $obj | Add-Member SHA256 (Get-FileHash -Algorithm SHA256 -Path $ruta).Hash
+            $obj | Add-Member Path $ruta
+            $ListaComandos = $ListaComandos +$obj
+        }
+    }
+    # Devolvemos la lista de rutas encontradas.
+    $ListaComandos 
+}
+
+
+
+
+
+
+
+
+
+
+<#
+.Synopsis
+   Obtiene la lista de las rutas de ficheros usados por los servicios.
+.DESCRIPTION
+   Obtiene la lista de las rutas de ficheros usados por los servicios.
+   Y calcula el hash SHA256 de dicha ruta.
+   Se pueden aplicar filtros por el nombre de servicio.
+.EXAMPLE
+    Get-ServicePatch 
+    
+   Obtiene la lista de las rutas de ficheros usados por todos los servicios.
+
+.EXAMPLE
+    Get-ServicePatch -name adobe
+        
+   Obtiene la lista de las rutas de ficheros usados por todos 
+   los servicios cuyo nombre contiene "adobe"
+
+
+.EXAMPLE
+   (Get-ServicePatch) | select @{Name="Existe"; Expression = {test-path $_.path}}, * | ft -AutoSize
+
+
+   Obtiene la lista de las rutas de ficheros usados por todos 
+   los servicios y comprueba si la ruta existe.
+#>
+
+function Get-ServicePatch
+{
+    [CmdletBinding(ConfirmImpact='Medium')]
+    Param
+    (
+
+        # Permite filtrar los servicios por el nombre.
+        [Parameter(Mandatory=$false,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [string]$Name
+        
+    )
+
+    # Obtenemos los servicios
+
+
+    $servicios = gwmi Win32_Service |where-object {$_.name -match $Name } 
+    $pathposibles = @()
+    ForEach ($servicio in $servicios)
+    { 
+        $rutas = $servicio.pathname
+        $rutas = $rutas.split('"')
+        $rutas = $rutas  | Where-Object { ($_ -match "\\" ) }| ForEach-Object { $_.Substring(0, $_.lastIndexOf(".") + 4) }
+        ForEach ($ruta in $rutas){
+            $obj = New-Object PSObject 
+            $obj | Add-Member Name $servicio.name
+            $obj | Add-Member SHA256 (Get-FileHash -Algorithm SHA256 -Path $ruta).Hash
+            $obj | Add-Member PAth $ruta
+            $pathposibles = $pathposibles + $obj
+        }
+
+    }
+    # Devolvemos el array con los elementos correspondietes registros.
+    $pathposibles 
+
+}
+
+
 
 
 
