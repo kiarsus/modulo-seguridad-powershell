@@ -29,11 +29,14 @@
  los recursos usados para la recogida de evidencias, monitorización 
  de eventos y la contención de determinados ataques:
  
-    * Memoria (procesos y servcios)
-    * Almacenamiento en disco
-    * Registro de Windows
-    * Red
-
+ 
+*	RansomWare
+*	Red
+*	Almacenamiento en disco
+ *	Trabajar con Almacenes de correo Outlook (Ficheros .PST) 
+ *	Listado y eliminación de ficheros temporales 
+*	Registro de Windows
+*	Memoria (procesos y servicios)
 
 
 
