@@ -1136,8 +1136,8 @@ function Get-MITM
     # elemento de prueba de la función main...
      
 
-   $ArpTableNow[1].MAC=$ArpTableNow[0].MAC
-   $ArpTableNow[2].MAC=$ArpTableNow[3].MAC
+  # $ArpTableNow[1].MAC=$ArpTableNow[0].MAC
+  # $ArpTableNow[2].MAC=$ArpTableNow[3].MAC
     
     #$ArpTable 
 
@@ -1343,7 +1343,7 @@ function New-MITMRuleFirewall
     $RuleNameOut="MITM-Out-" + $IpAddress.ToString()
 
     
-    if (-not (Exists-MITMRule $RuleNameIn)){
+    if (-not (Test-MITMRule $RuleNameIn)){
         $Papelera=New-NetFirewallRule -DisplayName $RuleNameIn  -Action Block -Direction Inbound  -Enabled True -InterfaceType Any -Profile Any -RemoteAddress $IpAddress -Group "MITM"
         $Papelera=New-NetFirewallRule -DisplayName $RuleNameOut -Action Block -Direction Outbound -Enabled True -InterfaceType Any -Profile Any -RemoteAddress $IpAddress -Group "MITM"
     }
@@ -1424,7 +1424,7 @@ function Remove-MITMRuleFirewall
         $RuleNameOut="MITM-Out-" + $IpAddress.ToString()
 
     
-        if (Exists-MITMRule $RuleNameIn){
+        if (Test-MITMRule $RuleNameIn){
             $Papelera=Remove-NetFirewallRule -DisplayName $RuleNameIn
             $Papelera=Remove-NetFirewallRule -DisplayName $RuleNameOut
         }
